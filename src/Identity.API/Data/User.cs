@@ -19,7 +19,7 @@ public class User
     public string FullName { get; set; }
 
     [MaxLength(20)]
-    public string Phone { get; set; }
+    public string? Phone { get; set; }
 
     [Required]
     public UserRole Role { get; set; } = UserRole.Customer;
@@ -30,8 +30,8 @@ public class User
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? LastLoginAt { get; set; }
-    public string ProfileImageUrl { get; set; }
-    public string Notes { get; set; }
+    public string? ProfileImageUrl { get; set; }
+    public string? Notes { get; set; }
 }
 
 public enum UserRole

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catalog.API", "src\Catalog.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.API", "src\Identity.API\Identity.API.csproj", "{D5E94154-29B2-4BB8-957B-13A745F200A5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutdoorRent.Shared", "src\BuildingBlocks\OutdoorRent.Shared\OutdoorRent.Shared.csproj", "{ED3B1710-C1A2-46F6-8D3B-B080B08C561B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{D5E94154-29B2-4BB8-957B-13A745F200A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5E94154-29B2-4BB8-957B-13A745F200A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5E94154-29B2-4BB8-957B-13A745F200A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED3B1710-C1A2-46F6-8D3B-B080B08C561B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED3B1710-C1A2-46F6-8D3B-B080B08C561B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED3B1710-C1A2-46F6-8D3B-B080B08C561B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED3B1710-C1A2-46F6-8D3B-B080B08C561B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

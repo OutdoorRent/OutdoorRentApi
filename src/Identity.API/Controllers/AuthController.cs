@@ -2,6 +2,8 @@ using Identity.API.Services;
 using Identity.API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Duende.IdentityModel;
+using Identity.API.DTO;
+using OutdoorRent.Shared.Responses;
 
 namespace Identity.API.Controllers;
 
@@ -46,4 +48,31 @@ public class AuthController : ControllerBase
 
         return Ok(token);
     }
+    
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest data)
+    {
+        
+        var cognitoSub = await _authService.RegisterAsync(data);
+
+        await _authService.CreateLocalUserAsync(cognitoSub, data);
+        
+        return Ok(
+            ApiResponse<string>.Ok("register success!"));
+    }
+    
+    [HttpPost("verify")]
+    public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
+    {
+        await _authService.ConfirmSignUpAsync(request);
+        return Ok(ApiResponse<string>.Ok("Email verified"));
+    }
+    
+    [HttpPost("resend")]
+    public async Task<IActionResult> ResendVerifyCode([FromBody] ResendVerifyCodeRequest request)
+    {
+        await _authService.ResendVerificationCodeAsync(request.Email);
+        return Ok(ApiResponse<string>.Ok("Success resend verify code"));
+    }
+    
 }

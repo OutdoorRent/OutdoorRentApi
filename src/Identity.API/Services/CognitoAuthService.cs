@@ -4,17 +4,26 @@ using System.Text.Json;
 using Duende.IdentityModel;
 using Duende.IdentityModel.Client;
 using Identity.API.Models;
+using Identity.API.DTO;
+using Identity.API.Data;
+using Amazon.CognitoIdentityProvider;
+using Amazon.CognitoIdentityProvider.Model;
+
 namespace Identity.API.Services;
 
 public class CognitoAuthService
 {
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _config;
+    private readonly IdentityDbContext _db;
+    private readonly IAmazonCognitoIdentityProvider _cognitoClient;
 
-    public CognitoAuthService(HttpClient httpClient, IConfiguration config)
+    public CognitoAuthService(HttpClient httpClient, IConfiguration config, IdentityDbContext db, IAmazonCognitoIdentityProvider cognitoClient)
     {
         _httpClient = httpClient;
         _config = config;
+        _db = db;
+        _cognitoClient = cognitoClient;
     }
 
     public string GetLoginUrl(string codeChallenge)
@@ -39,7 +48,6 @@ public class CognitoAuthService
     {
         // var authority = _config["Cognito:Authority"];
         // var clientId = _config["Cognito:ClientId"];
-        // var clientSecret = _config["Cognito:ClientSecret"];
         // var redirectUri = _config["Cognito:RedirectUri"];
         //
         // var disco = await _httpClient.GetDiscoveryDocumentAsync(new DiscoveryDocumentRequest
@@ -73,7 +81,7 @@ public class CognitoAuthService
         //
         var domain = _config["Cognito:Domain"];
         var clientId = _config["Cognito:ClientId"];
-        var clientSecret = _config["Cognito:ClientSecret"];
+        // var clientSecret = _config["Cognito:ClientSecret"];
         var redirectUri = _config["Cognito:RedirectUri"];
 
         using var client = new HttpClient();
@@ -84,12 +92,12 @@ public class CognitoAuthService
         );
 
         // Basic Auth（如果是 public client 可去掉）
-        var auth = Convert.ToBase64String(
-            Encoding.UTF8.GetBytes($"{clientId}:{clientSecret}")
-        );
+        // var auth = Convert.ToBase64String(
+        //     Encoding.UTF8.GetBytes($"{clientId}:{clientSecret}")
+        // );
 
-        request.Headers.Authorization =
-            new AuthenticationHeaderValue("Basic", auth);
+        // request.Headers.Authorization =
+        //     new AuthenticationHeaderValue("Basic", auth);
 
         request.Content = new FormUrlEncodedContent(new Dictionary<string, string>
         {
@@ -109,5 +117,73 @@ public class CognitoAuthService
         return JsonSerializer.Deserialize<Models.TokenResponse>(json)!;
 
         // return tokenResponse;
+    }
+
+    public async Task<string> RegisterAsync(RegisterRequest request)
+    {
+
+        var signUpRequest = new SignUpRequest
+        {
+            ClientId = _config["Cognito:ClientId"],
+            Username = request.Email,
+            Password = request.Password,
+            UserAttributes = new List<AttributeType>
+            {
+                new AttributeType
+                {
+                    Name = "email",
+                    Value = request.Email
+                },
+                new AttributeType
+                {
+                    Name = "name",
+                    Value = request.FullName
+                }
+            }
+        };
+
+        var response = await _cognitoClient.SignUpAsync(signUpRequest);
+
+        return response.UserSub; 
+    }
+    
+    public async Task CreateLocalUserAsync(
+        string cognitoSub,
+        RegisterRequest request)
+    {
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            CognitoSub = cognitoSub,
+            Email = request.Email,
+            FullName = request.FullName,
+            Role = UserRole.Customer,
+            Status = UserStatus.Active,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _db.Users.Add(user);
+        await _db.SaveChangesAsync();
+    }
+    
+    public async Task ConfirmSignUpAsync(VerifyEmailRequest body)
+    {
+        var request = new ConfirmSignUpRequest
+        {
+            ClientId = _config["Cognito:ClientId"],
+            Username = body.Email,
+            ConfirmationCode = body.Code
+        };
+        await _cognitoClient.ConfirmSignUpAsync(request);
+    }
+    
+    public async Task ResendVerificationCodeAsync(string email)
+    {
+        var request = new ResendConfirmationCodeRequest
+        {
+            ClientId = _config["Cognito:ClientId"],
+            Username = email
+        };
+        await _cognitoClient.ResendConfirmationCodeAsync(request);
     }
 }
