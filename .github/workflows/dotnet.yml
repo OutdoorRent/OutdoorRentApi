@@ -24,7 +24,10 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/outdoor-identity:latest ./src/Identity.API
+          docker build \
+            -f src/Identity.API/Dockerfile \
+            -t ${{ secrets.DOCKER_USERNAME }}/outdoor-identity:latest \
+            .
           docker push ${{ secrets.DOCKER_USERNAME }}/outdoor-identity:latest
 
       - name: Set up SSH
