@@ -57,7 +57,7 @@ public sealed class GlobalExceptionMiddleware
 
             _ => ApiResponse.Fail(
                 "SYSTEM_ERROR",
-                "An unexpected error occurred"
+                exception.Message
             )
         };
 
