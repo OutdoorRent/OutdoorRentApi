@@ -23,7 +23,22 @@ var awsOptions = new AWSOptions
 
 builder.Services.AddDefaultAWSOptions(awsOptions);
 builder.Services.AddAWSService<IAmazonCognitoIdentityProvider>();
-
+// cors support
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost", policy =>
+    {
+        policy
+            .SetIsOriginAllowed(origin =>
+            {
+                return Uri.TryCreate(origin, UriKind.Absolute, out var uri)
+                       && uri.Host == "localhost";
+            })
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials(); // 如果前端会发送 cookie 或 Authorization header
+    });
+});
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
@@ -64,7 +79,6 @@ app.MapGet("/secure", (ClaimsPrincipal user) =>
         };
     })
     .RequireAuthorization();
-
 
 app.MapControllerRoute(
     name: "default",
